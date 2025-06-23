@@ -124,12 +124,28 @@ def download_video():
     if not url or not is_valid_youtube_url(url):
         return jsonify({"error": "Invalid YouTube URL"}), 400
 
+    cookies_path = os.getenv("COOKIES_FILE")  # e.g. 'cookies.txt'
+
+    if cookies_path:
+        logger.info(f"Environment variable COOKIES_FILE is set to: {cookies_path}")
+    else:
+        logger.warning("Environment variable COOKIES_FILE not set.")
+
+    if cookies_path and not os.path.exists(cookies_path):
+        logger.warning(f"Cookie file not found at {cookies_path}. YouTube may require login.")
+
     try:
         ydl_opts = {
             'outtmpl': os.path.join(DOWNLOADS_DIR, '%(id)s.%(ext)s'),
             'quiet': True,
-            'noplaylist': True
+            'noplaylist': True,
         }
+
+        if cookies_path and os.path.exists(cookies_path):
+            logger.info(f"Using cookies from: {cookies_path}")
+            ydl_opts['cookiefile'] = cookies_path
+        else:
+            logger.warning("No valid cookies file found. Some downloads may fail due to bot detection.")
 
         if format_type == "mp3":
             ydl_opts.update({
@@ -166,7 +182,7 @@ def download_video():
 
     except Exception as e:
         logger.error(f"Download failed: {str(e)}", exc_info=True)
-        return jsonify({"error": "Download failed"}), 500
+        return jsonify({"error": "Download failed", "details": str(e)}), 500
 
 @app.route('/')
 def home():
