@@ -4,8 +4,7 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from yt_dlp import YoutubeDL
 from urllib.parse import urlparse
-from python_dotenv import load_dotenv
-
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
