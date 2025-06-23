@@ -91,13 +91,14 @@ def get_video_info():
 
         formats = []
         for f in info.get('formats', []):
-            if f.get('vcodec') != 'none' and f.get('acodec') != 'none':
+            if f.get('url') and f.get('vcodec') != 'none':
                 formats.append({
                     'itag': f.get('format_id'),
                     'ext': f.get('ext'),
                     'resolution': f.get('resolution') or f.get('height', 'audio'),
                     'filesize': f.get('filesize') or 0,
-                    'format_note': f.get('format_note'),
+                    'format_note': f.get('format_note', ''),
+                    'url': f.get('url')
                 })
 
         return jsonify({
@@ -124,7 +125,7 @@ def download_video():
     if not url or not is_valid_youtube_url(url):
         return jsonify({"error": "Invalid YouTube URL"}), 400
 
-    cookies_path = os.getenv("COOKIES_FILE")  # e.g. 'cookies.txt'
+    cookies_path = os.getenv("COOKIES_FILE")
 
     if cookies_path:
         logger.info(f"Environment variable COOKIES_FILE is set to: {cookies_path}")
